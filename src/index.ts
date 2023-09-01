@@ -17,7 +17,12 @@ async function getFile({
   file: string;
 }): Promise<void> {
   const readImportFile = await fs.readFile(file, { encoding: "utf-8" });
-  console.log(readImportFile);
+  const dom = new JSDOM(readImportFile);
+  const query = dom.window.document.querySelectorAll("span");
+  const toArr = Array.from(query);
+  toArr.forEach((item) => {
+    console.log(item.title);
+  });
 }
 
 events.emit("start", argv);
