@@ -26,10 +26,12 @@ const COLUMNS = [
 const STARTING_DATA_COUNTER = 0;
 let mappedDataArray = [];
 let newData = {};
-async function getFile({ _, v, i, }) {
-    console.log(v);
-    const f = "src/sampledataNames.txt";
-    const readImportFile = await fs.readFile(f, { encoding: "utf-8" });
+async function getFile({ _, f, v, i, }) {
+    console.log(argv.f);
+    const fe = "src/sampledataNames.txt";
+    const readImportFile = await fs.readFile(f !== undefined ? f : fe, {
+        encoding: "utf-8",
+    });
     const dom = new JSDOM(readImportFile);
     const queryDataTableContainer = dom.window.document.getElementsByClassName("native-scroll__container_resizable")[0];
     const queryNameTableContainer = dom.window.document.querySelector("#search-results-data-table-fixed-table > .data-table__tbody");
@@ -50,8 +52,8 @@ async function getFile({ _, v, i, }) {
             mappedDataArray.push({
                 Name: nameTable[mappedDataArray.length].textContent,
                 ...newData,
-                Industries: i === undefined ? "" : parseSpacedArguments(i),
-                Verticals: parseSpacedArguments(v),
+                Industries: i === undefined ? "" : removeChar(i),
+                Verticals: removeChar(v),
             });
             dataCounter = STARTING_DATA_COUNTER;
             newData = {};
@@ -61,7 +63,7 @@ async function getFile({ _, v, i, }) {
     console.log(mappedDataArray[1]);
     events.emit("write", mappedDataArray);
 }
-function parseSpacedArguments(argument) {
+function removeChar(argument) {
     let tmpHolder = "";
     for (let i = 0; i < argument.length; i++) {
         if (argument[i] !== "-") {

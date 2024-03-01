@@ -33,16 +33,19 @@ let newData: { [key: string]: string } = {};
 
 async function getFile({
   _,
+  f,
   v,
   i,
 }: {
   _: Array<string | "">;
+  f?: string;
   v: string;
   i?: string;
 }): Promise<void> {
-  console.log(v);
-  const f = "src/sampledataNames.txt";
-  const readImportFile = await fs.readFile(f, { encoding: "utf-8" });
+  const fe = "src/sampledataNames.txt";
+  const readImportFile = await fs.readFile(f !== undefined ? f : fe, {
+    encoding: "utf-8",
+  });
   const dom = new JSDOM(readImportFile);
   const queryDataTableContainer = dom.window.document.getElementsByClassName(
     "native-scroll__container_resizable"
