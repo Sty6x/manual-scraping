@@ -5,7 +5,7 @@ import parseArgs from "minimist";
 import EventEmitter from "events";
 import ExcelJS from "exceljs";
 const events = new EventEmitter();
-const argv = parseArgs(process.argv.splice(2));
+const argv = parseArgs(process.argv.slice(2));
 const workbook = new ExcelJS.Workbook();
 const worksheet = workbook.getWorksheet("Email list") === undefined
     ? workbook.addWorksheet("Email list")
@@ -26,8 +26,8 @@ const COLUMNS = [
 const STARTING_DATA_COUNTER = 0;
 let mappedDataArray = [];
 let newData = {};
-async function getFile({ _, file, }) {
-    console.log(file);
+async function getFile({ _, v, i, }) {
+    console.log(v);
     const f = "src/sampledataNames.txt";
     const readImportFile = await fs.readFile(f, { encoding: "utf-8" });
     const dom = new JSDOM(readImportFile);
@@ -36,7 +36,7 @@ async function getFile({ _, file, }) {
     const nameTable = Array.from(queryNameTableContainer.querySelectorAll("span.entity-format__entity-profile > a"));
     const dataTable = Array.from(queryDataTableContainer.querySelectorAll(".cell-editable__content"));
     let dataCounter = STARTING_DATA_COUNTER;
-    const mapData = dataTable.forEach((item, i) => {
+    const mapData = dataTable.forEach((item) => {
         // length 8
         const evaluateSpan = item.querySelector("span") !== null
             ? item.querySelector("span")?.lastChild?.textContent
@@ -50,6 +50,8 @@ async function getFile({ _, file, }) {
             mappedDataArray.push({
                 Name: nameTable[mappedDataArray.length].textContent,
                 ...newData,
+                Industries: i === undefined ? "" : parseSpacedArguments(i),
+                Verticals: parseSpacedArguments(v),
             });
             dataCounter = STARTING_DATA_COUNTER;
             newData = {};
@@ -59,10 +61,23 @@ async function getFile({ _, file, }) {
     console.log(mappedDataArray[1]);
     events.emit("write", mappedDataArray);
 }
+function parseSpacedArguments(argument) {
+    let tmpHolder = "";
+    for (let i = 0; i < argument.length; i++) {
+        if (argument[i] !== "-") {
+            tmpHolder += argument[i];
+        }
+        else {
+            tmpHolder += " ";
+        }
+    }
+    console.log(tmpHolder);
+    return tmpHolder;
+}
 async function writeEmails(personDatas) {
     try {
-        worksheet.columns = ["Name", ...COLUMNS].map((column) => ({
-            header: column,
+        worksheet.columns = ["Name", ...COLUMNS, "Industries", "Verticals"].map((column) => ({
+            header: "",
             key: column,
             width: 50,
         }));

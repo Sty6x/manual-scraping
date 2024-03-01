@@ -5,7 +5,7 @@ import parseArgs from "minimist";
 import EventEmitter from "events";
 import ExcelJS from "exceljs";
 const events = new EventEmitter();
-const argv = parseArgs(process.argv.splice(2));
+const argv = parseArgs(process.argv.slice(2));
 const workbook = new ExcelJS.Workbook();
 const worksheet =
   workbook.getWorksheet("Email list") === undefined
@@ -33,12 +33,14 @@ let newData: { [key: string]: string } = {};
 
 async function getFile({
   _,
-  file,
+  v,
+  i,
 }: {
   _: Array<string | "">;
-  file: string;
+  v: string;
+  i?: string;
 }): Promise<void> {
-  console.log(file);
+  console.log(v);
   const f = "src/sampledataNames.txt";
   const readImportFile = await fs.readFile(f, { encoding: "utf-8" });
   const dom = new JSDOM(readImportFile);
@@ -62,7 +64,7 @@ async function getFile({
   );
   let dataCounter = STARTING_DATA_COUNTER;
 
-  const mapData = dataTable.forEach((item, i) => {
+  const mapData = dataTable.forEach((item) => {
     // length 8
     const evaluateSpan =
       item.querySelector("span") !== null
@@ -78,6 +80,8 @@ async function getFile({
       mappedDataArray.push({
         Name: nameTable[mappedDataArray.length].textContent,
         ...newData,
+        Industries: i === undefined ? "" : removeChar(i),
+        Verticals: removeChar(v),
       });
       dataCounter = STARTING_DATA_COUNTER;
       newData = {};
@@ -90,17 +94,32 @@ async function getFile({
   events.emit("write", mappedDataArray);
 }
 
+function removeChar(argument: string): string {
+  let tmpHolder = "";
+  for (let i = 0; i < argument.length; i++) {
+    if (argument[i] !== "-") {
+      tmpHolder += argument[i];
+    } else {
+      tmpHolder += " ";
+    }
+  }
+  console.log(tmpHolder);
+  return tmpHolder;
+}
+
 async function writeEmails(
   personDatas: Array<{
     [key: string]: string;
   }>
 ) {
   try {
-    worksheet.columns = ["Name", ...COLUMNS].map((column) => ({
-      header: column,
-      key: column,
-      width: 50,
-    }));
+    worksheet.columns = ["Name", ...COLUMNS, "Industries", "Verticals"].map(
+      (column) => ({
+        header: "",
+        key: column,
+        width: 50,
+      })
+    );
     personDatas.forEach((row) => worksheet.addRow(row));
     await workbook.xlsx.writeFile("output.xlsx");
   } catch (err) {
