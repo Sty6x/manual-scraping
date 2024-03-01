@@ -4,7 +4,6 @@ import { JSDOM } from "jsdom";
 import parseArgs from "minimist";
 import EventEmitter from "events";
 import ExcelJS from "exceljs";
-import { workerData } from "worker_threads";
 const events = new EventEmitter();
 const argv = parseArgs(process.argv.splice(2));
 const workbook = new ExcelJS.Workbook();
@@ -16,6 +15,22 @@ events.addListener("start", getFile);
 events.emit("start", argv);
 events.addListener("write", writeEmails);
 
+const COLUMNS = [
+  "Name",
+  "Prefix",
+  "Primary Position",
+  "Primary Company",
+  "Primary Company Type",
+  "Country/Territory",
+  "Email",
+  "Phone",
+  "Linkedin URL",
+];
+
+let mappedDataArray: Array<any> = [];
+
+let newData: { [key: string]: string } = {};
+
 async function getFile({
   _,
   file,
@@ -23,31 +38,55 @@ async function getFile({
   _: Array<string | "">;
   file: string;
 }): Promise<void> {
-  const readImportFile = await fs.readFile(file, { encoding: "utf-8" });
+  console.log(file);
+  const f = "src/sampledata.txt";
+  const readImportFile = await fs.readFile(f, { encoding: "utf-8" });
   const dom = new JSDOM(readImportFile);
-  const query = Array.from(dom.window.document.querySelectorAll("span"));
-  const mapQuery = query.map((item) => item);
-  events.emit("write", mapQuery);
+  const queryDataContainer = dom.window.document.getElementsByClassName(
+    "native-scroll__container_resizable"
+  )[0];
+
+  const data: Array<HTMLSpanElement> = Array.from(
+    queryDataContainer.querySelectorAll(".cell-editable__content")
+  );
+  let dataCounter = 0;
+  const mapData = data.forEach((item, i) => {
+    const evaluateSpan =
+      item.querySelector("span") !== null
+        ? item.querySelector("span")?.lastChild?.textContent
+        : "";
+
+    if (dataCounter < COLUMNS.length - 1) {
+      newData = {
+        ...newData,
+        [COLUMNS[dataCounter]]: evaluateSpan as string,
+      };
+      dataCounter++;
+    } else {
+      mappedDataArray.push({ ...newData });
+      // next iteration is fucked apparently
+      dataCounter = 0;
+      newData = {};
+    }
+  });
+  console.log(mappedDataArray[0]);
+  console.log(mappedDataArray[1]);
+  events.emit("write", mappedDataArray);
 }
 
-async function writeEmails(emails: HTMLElement[]) {
+async function writeEmails(
+  personDatas: Array<{
+    [key: string]: string;
+  }>
+) {
   try {
-    worksheet.columns = [{ header: "", key: "emails" }];
-    const filteredEmails = emails.filter((email) => email.title !== "");
-    const emailCol = worksheet.getColumn(1);
-    emailCol.width = 50;
-    const newRows = filteredEmails.map((email) => ({
-      emails: email.title,
+    worksheet.columns = COLUMNS.map((column) => ({
+      header: column,
+      key: column,
+      width: 50,
     }));
-    // if (worksheet.rowCount !== 0) {
-    //   worksheet.eachRow((row, i) => {
-    //     console.log(row.values);
-    //   });
-    //   return;
-    // }
-    newRows.forEach((row) => worksheet.addRow(row));
+    personDatas.forEach((row) => worksheet.addRow(row));
     await workbook.xlsx.writeFile("output.xlsx");
-    console.log(newRows);
   } catch (err) {
     console.log("yikes");
     console.log(err);
