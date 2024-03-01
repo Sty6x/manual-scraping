@@ -16,7 +16,6 @@ events.emit("start", argv);
 events.addListener("write", writeEmails);
 
 const COLUMNS = [
-  "Name",
   "Prefix",
   "Primary Position",
   "Primary Company",
@@ -26,7 +25,7 @@ const COLUMNS = [
   "Phone",
   "Linkedin URL",
 ];
-const STARTING_DATA_COUNTER = 1;
+const STARTING_DATA_COUNTER = 0;
 
 let mappedDataArray: Array<any> = [];
 
@@ -62,35 +61,32 @@ async function getFile({
     queryDataTableContainer.querySelectorAll(".cell-editable__content")
   );
   let dataCounter = STARTING_DATA_COUNTER;
-  // need to start from the prefix becuase the Name
-  // property will be handled differently
-  // data counter starts with 1 to skip the Name property
 
   const mapData = dataTable.forEach((item, i) => {
+    // length 8
     const evaluateSpan =
       item.querySelector("span") !== null
         ? item.querySelector("span")?.lastChild?.textContent
         : "";
 
-    // length 8
-    if (dataCounter < COLUMNS.length - 1) {
-      newData = {
-        ...newData,
-        [COLUMNS[dataCounter]]: evaluateSpan as string,
-      };
-      dataCounter++;
-    } else {
+    newData = {
+      ...newData,
+      [COLUMNS[dataCounter]]: evaluateSpan as string,
+    };
+    dataCounter++;
+    if (dataCounter >= 8) {
       mappedDataArray.push({
         Name: nameTable[mappedDataArray.length].textContent,
         ...newData,
       });
-      // next iteration is fucked apparently
       dataCounter = STARTING_DATA_COUNTER;
       newData = {};
     }
   });
+
   console.log(mappedDataArray[0]);
   console.log(mappedDataArray[1]);
+
   events.emit("write", mappedDataArray);
 }
 
@@ -100,7 +96,7 @@ async function writeEmails(
   }>
 ) {
   try {
-    worksheet.columns = COLUMNS.map((column) => ({
+    worksheet.columns = ["Name", ...COLUMNS].map((column) => ({
       header: column,
       key: column,
       width: 50,

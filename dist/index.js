@@ -14,7 +14,6 @@ events.addListener("start", getFile);
 events.emit("start", argv);
 events.addListener("write", writeEmails);
 const COLUMNS = [
-    "Name",
     "Prefix",
     "Primary Position",
     "Primary Company",
@@ -24,7 +23,7 @@ const COLUMNS = [
     "Phone",
     "Linkedin URL",
 ];
-const STARTING_DATA_COUNTER = 1;
+const STARTING_DATA_COUNTER = 0;
 let mappedDataArray = [];
 let newData = {};
 async function getFile({ _, file, }) {
@@ -37,27 +36,21 @@ async function getFile({ _, file, }) {
     const nameTable = Array.from(queryNameTableContainer.querySelectorAll("span.entity-format__entity-profile > a"));
     const dataTable = Array.from(queryDataTableContainer.querySelectorAll(".cell-editable__content"));
     let dataCounter = STARTING_DATA_COUNTER;
-    // need to start from the prefix becuase the Name
-    // property will be handled differently
-    // data counter starts with 1 to skip the Name property
     const mapData = dataTable.forEach((item, i) => {
+        // length 8
         const evaluateSpan = item.querySelector("span") !== null
             ? item.querySelector("span")?.lastChild?.textContent
             : "";
-        // length 8
-        if (dataCounter < COLUMNS.length - 1) {
-            newData = {
-                ...newData,
-                [COLUMNS[dataCounter]]: evaluateSpan,
-            };
-            dataCounter++;
-        }
-        else {
+        newData = {
+            ...newData,
+            [COLUMNS[dataCounter]]: evaluateSpan,
+        };
+        dataCounter++;
+        if (dataCounter >= 8) {
             mappedDataArray.push({
                 Name: nameTable[mappedDataArray.length].textContent,
                 ...newData,
             });
-            // next iteration is fucked apparently
             dataCounter = STARTING_DATA_COUNTER;
             newData = {};
         }
@@ -68,7 +61,7 @@ async function getFile({ _, file, }) {
 }
 async function writeEmails(personDatas) {
     try {
-        worksheet.columns = COLUMNS.map((column) => ({
+        worksheet.columns = ["Name", ...COLUMNS].map((column) => ({
             header: column,
             key: column,
             width: 50,
