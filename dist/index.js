@@ -14,6 +14,7 @@ events.addListener("start", getFile);
 events.emit("start", argv);
 events.addListener("write", writeEmails);
 const COLUMNS = [
+    "Name",
     "Prefix",
     "Primary Position",
     "Primary Company",
@@ -23,20 +24,27 @@ const COLUMNS = [
     "Phone",
     "Linkedin URL",
 ];
+const STARTING_DATA_COUNTER = 1;
 let mappedDataArray = [];
 let newData = {};
 async function getFile({ _, file, }) {
     console.log(file);
-    const f = "src/sampledata.txt";
+    const f = "src/sampledataNames.txt";
     const readImportFile = await fs.readFile(f, { encoding: "utf-8" });
     const dom = new JSDOM(readImportFile);
-    const queryDataContainer = dom.window.document.getElementsByClassName("native-scroll__container_resizable")[0];
-    const data = Array.from(queryDataContainer.querySelectorAll(".cell-editable__content"));
-    let dataCounter = 0;
-    const mapData = data.forEach((item, i) => {
+    const queryDataTableContainer = dom.window.document.getElementsByClassName("native-scroll__container_resizable")[0];
+    const queryNameTableContainer = dom.window.document.querySelector("#search-results-data-table-fixed-table > .data-table__tbody");
+    const nameTable = Array.from(queryNameTableContainer.querySelectorAll("span.entity-format__entity-profile > a"));
+    const dataTable = Array.from(queryDataTableContainer.querySelectorAll(".cell-editable__content"));
+    let dataCounter = STARTING_DATA_COUNTER;
+    // need to start from the prefix becuase the Name
+    // property will be handled differently
+    // data counter starts with 1 to skip the Name property
+    const mapData = dataTable.forEach((item, i) => {
         const evaluateSpan = item.querySelector("span") !== null
             ? item.querySelector("span")?.lastChild?.textContent
             : "";
+        // length 8
         if (dataCounter < COLUMNS.length - 1) {
             newData = {
                 ...newData,
@@ -45,9 +53,12 @@ async function getFile({ _, file, }) {
             dataCounter++;
         }
         else {
-            mappedDataArray.push({ ...newData });
+            mappedDataArray.push({
+                Name: nameTable[mappedDataArray.length].textContent,
+                ...newData,
+            });
             // next iteration is fucked apparently
-            dataCounter = 0;
+            dataCounter = STARTING_DATA_COUNTER;
             newData = {};
         }
     });

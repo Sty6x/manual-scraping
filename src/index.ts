@@ -26,6 +26,7 @@ const COLUMNS = [
   "Phone",
   "Linkedin URL",
 ];
+const STARTING_DATA_COUNTER = 1;
 
 let mappedDataArray: Array<any> = [];
 
@@ -39,23 +40,39 @@ async function getFile({
   file: string;
 }): Promise<void> {
   console.log(file);
-  const f = "src/sampledata.txt";
+  const f = "src/sampledataNames.txt";
   const readImportFile = await fs.readFile(f, { encoding: "utf-8" });
   const dom = new JSDOM(readImportFile);
-  const queryDataContainer = dom.window.document.getElementsByClassName(
+  const queryDataTableContainer = dom.window.document.getElementsByClassName(
     "native-scroll__container_resizable"
   )[0];
 
-  const data: Array<HTMLSpanElement> = Array.from(
-    queryDataContainer.querySelectorAll(".cell-editable__content")
+  const queryNameTableContainer: HTMLDivElement =
+    dom.window.document.querySelector(
+      "#search-results-data-table-fixed-table > .data-table__tbody"
+    ) as HTMLDivElement;
+
+  const nameTable: Array<HTMLAnchorElement> = Array.from(
+    queryNameTableContainer.querySelectorAll(
+      "span.entity-format__entity-profile > a"
+    )
   );
-  let dataCounter = 0;
-  const mapData = data.forEach((item, i) => {
+
+  const dataTable: Array<HTMLSpanElement> = Array.from(
+    queryDataTableContainer.querySelectorAll(".cell-editable__content")
+  );
+  let dataCounter = STARTING_DATA_COUNTER;
+  // need to start from the prefix becuase the Name
+  // property will be handled differently
+  // data counter starts with 1 to skip the Name property
+
+  const mapData = dataTable.forEach((item, i) => {
     const evaluateSpan =
       item.querySelector("span") !== null
         ? item.querySelector("span")?.lastChild?.textContent
         : "";
 
+    // length 8
     if (dataCounter < COLUMNS.length - 1) {
       newData = {
         ...newData,
@@ -63,9 +80,12 @@ async function getFile({
       };
       dataCounter++;
     } else {
-      mappedDataArray.push({ ...newData });
+      mappedDataArray.push({
+        Name: nameTable[mappedDataArray.length].textContent,
+        ...newData,
+      });
       // next iteration is fucked apparently
-      dataCounter = 0;
+      dataCounter = STARTING_DATA_COUNTER;
       newData = {};
     }
   });
