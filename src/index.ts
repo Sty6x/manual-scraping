@@ -40,7 +40,7 @@ async function getFile({
   _: Array<string | "">;
   f?: string;
   v: string;
-  i?: string;
+  i: string;
 }): Promise<void> {
   const fe = "src/sampledataNames.txt";
   const readImportFile = await fs.readFile(f !== undefined ? f : fe, {
@@ -83,16 +83,13 @@ async function getFile({
       mappedDataArray.push({
         Name: nameTable[mappedDataArray.length].textContent,
         ...newData,
-        Industries: i === undefined ? "" : removeChar(i),
+        Industries: removeChar(i),
         Verticals: removeChar(v),
       });
       dataCounter = STARTING_DATA_COUNTER;
       newData = {};
     }
   });
-
-  console.log(mappedDataArray[0]);
-  console.log(mappedDataArray[1]);
 
   events.emit("write", mappedDataArray);
 }
@@ -106,7 +103,6 @@ function removeChar(argument: string): string {
       tmpHolder += " ";
     }
   }
-  console.log(tmpHolder);
   return tmpHolder;
 }
 
@@ -120,11 +116,16 @@ async function writeEmails(
       (column) => ({
         header: "",
         key: column,
-        width: 50,
+        width: 20,
       })
     );
     personDatas.forEach((row) => worksheet.addRow(row));
     await workbook.xlsx.writeFile("output.xlsx");
+
+    console.log("Data Scheme:");
+    console.log(mappedDataArray[0]);
+    console.log("...249 items more.");
+    console.log(`Successfully Scraped: ${personDatas.length} Items`);
   } catch (err) {
     console.log("yikes");
     console.log(err);

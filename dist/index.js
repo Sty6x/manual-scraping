@@ -27,7 +27,6 @@ const STARTING_DATA_COUNTER = 0;
 let mappedDataArray = [];
 let newData = {};
 async function getFile({ _, f, v, i, }) {
-    console.log(argv.f);
     const fe = "src/sampledataNames.txt";
     const readImportFile = await fs.readFile(f !== undefined ? f : fe, {
         encoding: "utf-8",
@@ -52,15 +51,13 @@ async function getFile({ _, f, v, i, }) {
             mappedDataArray.push({
                 Name: nameTable[mappedDataArray.length].textContent,
                 ...newData,
-                Industries: i === undefined ? "" : removeChar(i),
+                Industries: removeChar(i),
                 Verticals: removeChar(v),
             });
             dataCounter = STARTING_DATA_COUNTER;
             newData = {};
         }
     });
-    console.log(mappedDataArray[0]);
-    console.log(mappedDataArray[1]);
     events.emit("write", mappedDataArray);
 }
 function removeChar(argument) {
@@ -73,7 +70,6 @@ function removeChar(argument) {
             tmpHolder += " ";
         }
     }
-    console.log(tmpHolder);
     return tmpHolder;
 }
 async function writeEmails(personDatas) {
@@ -81,10 +77,14 @@ async function writeEmails(personDatas) {
         worksheet.columns = ["Name", ...COLUMNS, "Industries", "Verticals"].map((column) => ({
             header: "",
             key: column,
-            width: 50,
+            width: 20,
         }));
         personDatas.forEach((row) => worksheet.addRow(row));
         await workbook.xlsx.writeFile("output.xlsx");
+        console.log("Data Scheme:");
+        console.log(mappedDataArray[0]);
+        console.log("...249 items more.");
+        console.log(`Successfully Scraped: ${personDatas.length} Items`);
     }
     catch (err) {
         console.log("yikes");
