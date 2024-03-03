@@ -4,6 +4,9 @@ import { JSDOM } from "jsdom";
 import parseArgs from "minimist";
 import EventEmitter from "events";
 import ExcelJS from "exceljs";
+import removeChar from "./utils/removeChar.js";
+import logResults from "./utils/logResults.js";
+import { t_person } from "./utils/types/t_person.js";
 const events = new EventEmitter();
 const argv = parseArgs(process.argv.slice(2));
 const workbook = new ExcelJS.Workbook();
@@ -27,7 +30,7 @@ const COLUMNS = [
 ];
 const STARTING_DATA_COUNTER = 0;
 
-let mappedDataArray: Array<any> = [];
+let mappedDataArray: Array<t_person> = [];
 
 let newData: { [key: string]: string } = {};
 
@@ -85,7 +88,7 @@ async function getFile({
         ...newData,
         Industries: removeChar(i),
         Verticals: removeChar(v),
-      });
+      } as t_person);
       dataCounter = STARTING_DATA_COUNTER;
       newData = {};
     }
@@ -94,23 +97,7 @@ async function getFile({
   events.emit("write", mappedDataArray);
 }
 
-function removeChar(argument: string): string {
-  let tmpHolder = "";
-  for (let i = 0; i < argument.length; i++) {
-    if (argument[i] !== "-") {
-      tmpHolder += argument[i];
-    } else {
-      tmpHolder += " ";
-    }
-  }
-  return tmpHolder;
-}
-
-async function writeEmails(
-  personDatas: Array<{
-    [key: string]: string;
-  }>
-) {
+async function writeEmails(personData: Array<t_person>) {
   try {
     worksheet.columns = ["Name", ...COLUMNS, "Industries", "Verticals"].map(
       (column) => ({
@@ -119,15 +106,14 @@ async function writeEmails(
         width: 20,
       })
     );
-    personDatas.forEach((row) => worksheet.addRow(row));
+    personData.forEach((row) => worksheet.addRow(row));
     await workbook.xlsx.writeFile("output.xlsx");
-
-    console.log("Data Scheme:");
-    console.log(mappedDataArray[0]);
-    console.log("...249 items more.");
-    console.log(`Successfully Scraped: ${personDatas.length} Items`);
+    logResults("Passed", {
+      arr: [...personData],
+      sampleSchema: mappedDataArray[0],
+    });
   } catch (err) {
-    console.log("yikes");
+    logResults("Fail");
     console.log(err);
   }
 }
