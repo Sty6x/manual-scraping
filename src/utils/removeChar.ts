@@ -3,6 +3,8 @@ export default function removeChar(argument: string): string {
   for (let i = 0; i < argument.length; i++) {
     if (argument[i] !== "-") {
       tmpHolder += argument[i];
+    } else if (argument[i] === "&") {
+      tmpHolder += "&";
     } else {
       tmpHolder += " ";
     }

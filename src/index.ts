@@ -1,4 +1,4 @@
-#! /usr/bin/env node
+#!/usr/bin/env node
 import fs from "fs/promises";
 import { JSDOM } from "jsdom";
 import parseArgs from "minimist";
@@ -7,13 +7,16 @@ import ExcelJS from "exceljs";
 import removeChar from "./utils/removeChar.js";
 import logResults from "./utils/logResults.js";
 import { t_person } from "./utils/types/t_person.js";
+
 const events = new EventEmitter();
 const argv = parseArgs(process.argv.slice(2));
+
 const workbook = new ExcelJS.Workbook();
 const worksheet =
-  workbook.getWorksheet("Email list") === undefined
-    ? workbook.addWorksheet("Email list")
-    : workbook.getWorksheet("Email list");
+  workbook.getWorksheet("Person List") === undefined
+    ? workbook.addWorksheet("Person list")
+    : workbook.getWorksheet("Person list");
+
 events.addListener("start", getFile);
 events.emit("start", argv);
 events.addListener("write", writeEmails);
@@ -41,32 +44,31 @@ async function getFile({
   i,
 }: {
   _: Array<string | "">;
-  f?: string;
+  f: string;
   v: string;
   i: string;
 }): Promise<void> {
-  const fe = "src/sampledataNames.txt";
-  const readImportFile = await fs.readFile(f !== undefined ? f : fe, {
+  const readImportFile = await fs.readFile(f, {
     encoding: "utf-8",
   });
   const dom = new JSDOM(readImportFile);
   const queryDataTableContainer = dom.window.document.getElementsByClassName(
-    "native-scroll__container_resizable"
+    "native-scroll__container_resizable",
   )[0];
 
   const queryNameTableContainer: HTMLDivElement =
     dom.window.document.querySelector(
-      "#search-results-data-table-fixed-table > .data-table__tbody"
+      "#search-results-data-table-fixed-table > .data-table__tbody",
     ) as HTMLDivElement;
 
   const nameTable: Array<HTMLAnchorElement> = Array.from(
     queryNameTableContainer.querySelectorAll(
-      "span.entity-format__entity-profile > a"
-    )
+      "span.entity-format__entity-profile > a",
+    ),
   );
 
   const dataTable: Array<HTMLSpanElement> = Array.from(
-    queryDataTableContainer.querySelectorAll(".cell-editable__content")
+    queryDataTableContainer.querySelectorAll(".cell-editable__content"),
   );
   let dataCounter = STARTING_DATA_COUNTER;
 
@@ -104,7 +106,7 @@ async function writeEmails(personData: Array<t_person>) {
         header: "",
         key: column,
         width: 20,
-      })
+      }),
     );
     personData.forEach((row) => worksheet.addRow(row));
     await workbook.xlsx.writeFile("output.xlsx");
@@ -114,6 +116,7 @@ async function writeEmails(personData: Array<t_person>) {
     });
   } catch (err) {
     logResults("Fail");
+
     console.log(err);
   }
 }

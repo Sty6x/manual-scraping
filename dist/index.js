@@ -1,4 +1,4 @@
-#! /usr/bin/env node
+#!/usr/bin/env node
 import fs from "fs/promises";
 import { JSDOM } from "jsdom";
 import parseArgs from "minimist";
@@ -9,9 +9,9 @@ import logResults from "./utils/logResults.js";
 const events = new EventEmitter();
 const argv = parseArgs(process.argv.slice(2));
 const workbook = new ExcelJS.Workbook();
-const worksheet = workbook.getWorksheet("Email list") === undefined
-    ? workbook.addWorksheet("Email list")
-    : workbook.getWorksheet("Email list");
+const worksheet = workbook.getWorksheet("Person List") === undefined
+    ? workbook.addWorksheet("Person list")
+    : workbook.getWorksheet("Person list");
 events.addListener("start", getFile);
 events.emit("start", argv);
 events.addListener("write", writeEmails);
@@ -29,8 +29,7 @@ const STARTING_DATA_COUNTER = 0;
 let mappedDataArray = [];
 let newData = {};
 async function getFile({ _, f, v, i, }) {
-    const fe = "src/sampledataNames.txt";
-    const readImportFile = await fs.readFile(f !== undefined ? f : fe, {
+    const readImportFile = await fs.readFile(f, {
         encoding: "utf-8",
     });
     const dom = new JSDOM(readImportFile);
