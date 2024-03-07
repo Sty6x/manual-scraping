@@ -6,6 +6,7 @@ import EventEmitter from "events";
 import ExcelJS from "exceljs";
 import removeChar from "./utils/removeChar.js";
 import logResults from "./utils/logResults.js";
+import { exec } from "child_process";
 const events = new EventEmitter();
 const argv = parseArgs(process.argv.slice(2));
 const workbook = new ExcelJS.Workbook();
@@ -71,6 +72,13 @@ async function writeEmails(personData) {
         logResults("Passed", {
             arr: [...personData],
             sampleSchema: personData[0],
+        });
+        exec("xdg-open /home/francis-lp/repos/manual-scraping/output.xlsx", (err, stdout, stderr) => {
+            if (err) {
+                console.log(`Error ${err}`);
+                return;
+            }
+            console.log("Application running");
         });
     }
     catch (err) {

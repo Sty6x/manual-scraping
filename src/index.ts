@@ -7,6 +7,7 @@ import ExcelJS from "exceljs";
 import removeChar from "./utils/removeChar.js";
 import logResults from "./utils/logResults.js";
 import { t_person } from "./utils/types/t_person.js";
+import { exec } from "child_process";
 
 const events = new EventEmitter();
 const argv = parseArgs(process.argv.slice(2));
@@ -106,6 +107,17 @@ async function writeEmails(personData: Array<t_person>) {
       arr: [...personData],
       sampleSchema: personData[0],
     });
+
+    exec(
+      "xdg-open /home/francis-lp/repos/manual-scraping/output.xlsx",
+      (err, stdout, stderr) => {
+        if (err) {
+          console.log(`Error ${err}`);
+          return;
+        }
+        console.log("Application running");
+      },
+    );
   } catch (err) {
     logResults("Fail");
 
