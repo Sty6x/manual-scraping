@@ -4,6 +4,9 @@ export default function removeChar(argument) {
         if (argument[i] !== "-") {
             tmpHolder += argument[i];
         }
+        else if (argument[i] === "&") {
+            tmpHolder += "&";
+        }
         else {
             tmpHolder += " ";
         }

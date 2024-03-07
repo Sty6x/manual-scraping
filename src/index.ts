@@ -22,6 +22,8 @@ events.emit("start", argv);
 events.addListener("write", writeEmails);
 
 const COLUMNS = [
+  "First Name",
+  "Last Name",
   "Prefix",
   "Primary Position",
   "Primary Company",
@@ -56,24 +58,12 @@ async function getFile({
     "native-scroll__container_resizable",
   )[0];
 
-  const queryNameTableContainer: HTMLDivElement =
-    dom.window.document.querySelector(
-      "#search-results-data-table-fixed-table > .data-table__tbody",
-    ) as HTMLDivElement;
-
-  const nameTable: Array<HTMLAnchorElement> = Array.from(
-    queryNameTableContainer.querySelectorAll(
-      "span.entity-format__entity-profile > a",
-    ),
-  );
-
   const dataTable: Array<HTMLSpanElement> = Array.from(
     queryDataTableContainer.querySelectorAll(".cell-editable__content"),
   );
   let dataCounter = STARTING_DATA_COUNTER;
 
   const mapData = dataTable.forEach((item) => {
-    // length 8
     const evaluateSpan =
       item.querySelector("span") !== null
         ? item.querySelector("span")?.lastChild?.textContent
@@ -84,9 +74,8 @@ async function getFile({
       [COLUMNS[dataCounter]]: evaluateSpan as string,
     };
     dataCounter++;
-    if (dataCounter >= 8) {
+    if (dataCounter >= COLUMNS.length) {
       mappedDataArray.push({
-        Name: nameTable[mappedDataArray.length].textContent,
         ...newData,
         Industries: removeChar(i),
         Verticals: removeChar(v),
@@ -96,12 +85,15 @@ async function getFile({
     }
   });
 
-  events.emit("write", mappedDataArray);
+  events.emit(
+    "write",
+    mappedDataArray.filter((item) => item.Email !== "" && item),
+  );
 }
 
 async function writeEmails(personData: Array<t_person>) {
   try {
-    worksheet.columns = ["Name", ...COLUMNS, "Industries", "Verticals"].map(
+    worksheet.columns = [...COLUMNS, "Industries", "Verticals"].map(
       (column) => ({
         header: "",
         key: column,
@@ -112,7 +104,7 @@ async function writeEmails(personData: Array<t_person>) {
     await workbook.xlsx.writeFile("output.xlsx");
     logResults("Passed", {
       arr: [...personData],
-      sampleSchema: mappedDataArray[0],
+      sampleSchema: personData[0],
     });
   } catch (err) {
     logResults("Fail");

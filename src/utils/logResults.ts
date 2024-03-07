@@ -3,7 +3,7 @@ export default function logResults(
   data?: {
     arr: Array<{ [key: string]: any }>;
     sampleSchema: { [key: string]: any };
-  }
+  },
 ): void {
   if (state === "Fail") {
     console.log("Something went wrong.");
@@ -11,6 +11,5 @@ export default function logResults(
   }
   console.log("Data Scheme:");
   console.log(data?.sampleSchema);
-  console.log("...249 items more.");
   console.log(`Successfully Scraped: ${data && data.arr.length} Items`);
 }

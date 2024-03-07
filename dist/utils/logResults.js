@@ -5,6 +5,5 @@ export default function logResults(state, data) {
     }
     console.log("Data Scheme:");
     console.log(data?.sampleSchema);
-    console.log("...249 items more.");
     console.log(`Successfully Scraped: ${data && data.arr.length} Items`);
 }

@@ -16,6 +16,8 @@ events.addListener("start", getFile);
 events.emit("start", argv);
 events.addListener("write", writeEmails);
 const COLUMNS = [
+    "First Name",
+    "Last Name",
     "Prefix",
     "Primary Position",
     "Primary Company",
@@ -34,12 +36,9 @@ async function getFile({ _, f, v, i, }) {
     });
     const dom = new JSDOM(readImportFile);
     const queryDataTableContainer = dom.window.document.getElementsByClassName("native-scroll__container_resizable")[0];
-    const queryNameTableContainer = dom.window.document.querySelector("#search-results-data-table-fixed-table > .data-table__tbody");
-    const nameTable = Array.from(queryNameTableContainer.querySelectorAll("span.entity-format__entity-profile > a"));
     const dataTable = Array.from(queryDataTableContainer.querySelectorAll(".cell-editable__content"));
     let dataCounter = STARTING_DATA_COUNTER;
     const mapData = dataTable.forEach((item) => {
-        // length 8
         const evaluateSpan = item.querySelector("span") !== null
             ? item.querySelector("span")?.lastChild?.textContent
             : "";
@@ -48,9 +47,8 @@ async function getFile({ _, f, v, i, }) {
             [COLUMNS[dataCounter]]: evaluateSpan,
         };
         dataCounter++;
-        if (dataCounter >= 8) {
+        if (dataCounter >= COLUMNS.length) {
             mappedDataArray.push({
-                Name: nameTable[mappedDataArray.length].textContent,
                 ...newData,
                 Industries: removeChar(i),
                 Verticals: removeChar(v),
@@ -59,11 +57,11 @@ async function getFile({ _, f, v, i, }) {
             newData = {};
         }
     });
-    events.emit("write", mappedDataArray);
+    events.emit("write", mappedDataArray.filter((item) => item.Email !== "" && item));
 }
 async function writeEmails(personData) {
     try {
-        worksheet.columns = ["Name", ...COLUMNS, "Industries", "Verticals"].map((column) => ({
+        worksheet.columns = [...COLUMNS, "Industries", "Verticals"].map((column) => ({
             header: "",
             key: column,
             width: 20,
@@ -72,7 +70,7 @@ async function writeEmails(personData) {
         await workbook.xlsx.writeFile("output.xlsx");
         logResults("Passed", {
             arr: [...personData],
-            sampleSchema: mappedDataArray[0],
+            sampleSchema: personData[0],
         });
     }
     catch (err) {
