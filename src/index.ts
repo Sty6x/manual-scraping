@@ -45,11 +45,13 @@ async function getFile({
   f,
   v,
   i,
+  n,
 }: {
   _: Array<string | "">;
   f: string;
-  v: string;
-  i: string;
+  v?: string;
+  i?: string;
+  n: number;
 }): Promise<void> {
   const readImportFile = await fs.readFile(f, {
     encoding: "utf-8",
@@ -72,14 +74,14 @@ async function getFile({
 
     newData = {
       ...newData,
-      [COLUMNS[dataCounter]]: evaluateSpan as string,
+      [dataCounter]: evaluateSpan as string,
     };
     dataCounter++;
-    if (dataCounter >= COLUMNS.length) {
+    if (dataCounter >= n) {
       mappedDataArray.push({
         ...newData,
-        Industries: removeChar(i),
-        Verticals: removeChar(v),
+        // Industries: removeChar(i),
+        // Verticals: removeChar(v),
       } as t_person);
       dataCounter = STARTING_DATA_COUNTER;
       newData = {};
@@ -89,18 +91,25 @@ async function getFile({
   events.emit(
     "write",
     mappedDataArray.filter((item) => item.Email !== "" && item),
+    n,
   );
 }
 
-async function writeEmails(personData: Array<t_person>) {
+async function writeEmails(
+  personData: Array<t_person>,
+  numberOfColumns: number,
+) {
   try {
-    worksheet.columns = [...COLUMNS, "Industries", "Verticals"].map(
-      (column) => ({
-        header: "",
-        key: column,
-        width: 20,
-      }),
-    );
+    let columnsArr: Array<string> = [];
+    for (let i = 0; i < numberOfColumns; i++) {
+      columnsArr.push(i.toString());
+    }
+    console.log(columnsArr);
+    worksheet.columns = [...(columnsArr as Array<string>)].map((column) => ({
+      header: "",
+      key: column,
+      width: 20,
+    }));
     personData.forEach((row) => worksheet.addRow(row));
     await workbook.xlsx.writeFile("output.xlsx");
     logResults("Passed", {
