@@ -4,6 +4,7 @@ import { JSDOM } from "jsdom";
 import parseArgs from "minimist";
 import EventEmitter from "events";
 import ExcelJS from "exceljs";
+import removeChar from "./utils/removeChar.js";
 import logResults from "./utils/logResults.js";
 import { exec } from "child_process";
 const events = new EventEmitter();
@@ -38,7 +39,7 @@ async function getFile({ _, f, v, i, n, }) {
     const queryDataTableContainer = dom.window.document.getElementsByClassName("native-scroll__container_resizable")[0];
     const dataTable = Array.from(queryDataTableContainer.querySelectorAll(".cell-editable__content"));
     let dataCounter = STARTING_DATA_COUNTER;
-    const mapData = dataTable.forEach((item) => {
+    dataTable.forEach((item) => {
         const evaluateSpan = item.querySelector("span") !== null
             ? item.querySelector("span")?.lastChild?.textContent
             : "";
@@ -50,8 +51,8 @@ async function getFile({ _, f, v, i, n, }) {
         if (dataCounter >= n) {
             mappedDataArray.push({
                 ...newData,
-                // Industries: removeChar(i),
-                // Verticals: removeChar(v),
+                Industries: i !== undefined ? removeChar(i) : "",
+                Verticals: v !== undefined ? removeChar(v) : "",
             });
             dataCounter = STARTING_DATA_COUNTER;
             newData = {};
@@ -65,19 +66,25 @@ async function writeEmails(personData, numberOfColumns) {
         for (let i = 0; i < numberOfColumns; i++) {
             columnsArr.push(i.toString());
         }
-        console.log(columnsArr);
-        worksheet.columns = [...columnsArr].map((column) => ({
+        worksheet.columns = [
+            ...columnsArr,
+            "Industries",
+            "Verticals",
+        ].map((column) => ({
             header: "",
             key: column,
             width: 20,
         }));
-        personData.forEach((row) => worksheet.addRow(row));
+        // 2^2
+        personData.forEach((row) => worksheet.addRow({
+            ...row,
+        }));
         await workbook.xlsx.writeFile("output.xlsx");
         logResults("Passed", {
             arr: [...personData],
             sampleSchema: personData[0],
         });
-        exec("xdg-open /home/francis-lp/repos/manual-scraping/output.xlsx", (err, stdout, stderr) => {
+        exec("xdg-open /home/francis-lp/repos/manual-scraping/output.xlsx", (err) => {
             if (err) {
                 console.log(`Error ${err}`);
                 return;

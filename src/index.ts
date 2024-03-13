@@ -66,7 +66,7 @@ async function getFile({
   );
   let dataCounter = STARTING_DATA_COUNTER;
 
-  const mapData = dataTable.forEach((item) => {
+  dataTable.forEach((item) => {
     const evaluateSpan =
       item.querySelector("span") !== null
         ? item.querySelector("span")?.lastChild?.textContent
@@ -80,8 +80,8 @@ async function getFile({
     if (dataCounter >= n) {
       mappedDataArray.push({
         ...newData,
-        // Industries: removeChar(i),
-        // Verticals: removeChar(v),
+        Industries: i !== undefined ? removeChar(i) : "",
+        Verticals: v !== undefined ? removeChar(v) : "",
       } as t_person);
       dataCounter = STARTING_DATA_COUNTER;
       newData = {};
@@ -104,13 +104,22 @@ async function writeEmails(
     for (let i = 0; i < numberOfColumns; i++) {
       columnsArr.push(i.toString());
     }
-    console.log(columnsArr);
-    worksheet.columns = [...(columnsArr as Array<string>)].map((column) => ({
+    worksheet.columns = [
+      ...(columnsArr as Array<string>),
+      "Industries",
+      "Verticals",
+    ].map((column) => ({
       header: "",
       key: column,
       width: 20,
     }));
-    personData.forEach((row) => worksheet.addRow(row));
+
+    // 2^2
+    personData.forEach((row) =>
+      worksheet.addRow({
+        ...row,
+      }),
+    );
     await workbook.xlsx.writeFile("output.xlsx");
     logResults("Passed", {
       arr: [...personData],
@@ -119,7 +128,7 @@ async function writeEmails(
 
     exec(
       "xdg-open /home/francis-lp/repos/manual-scraping/output.xlsx",
-      (err, stdout, stderr) => {
+      (err) => {
         if (err) {
           console.log(`Error ${err}`);
           return;
@@ -129,7 +138,6 @@ async function writeEmails(
     );
   } catch (err) {
     logResults("Fail");
-
     console.log(err);
   }
 }
