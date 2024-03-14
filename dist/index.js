@@ -58,7 +58,7 @@ async function getFile({ _, f, v, i, n, }) {
             newData = {};
         }
     });
-    events.emit("write", mappedDataArray.filter((item) => item.Email !== "" && item), n);
+    events.emit("write", mappedDataArray.filter((item) => item[7] !== "" && item), n);
 }
 async function writeEmails(personData, numberOfColumns) {
     try {

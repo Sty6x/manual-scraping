@@ -90,7 +90,7 @@ async function getFile({
 
   events.emit(
     "write",
-    mappedDataArray.filter((item) => item.Email !== "" && item),
+    mappedDataArray.filter((item) => item[7] !== "" && item),
     n,
   );
 }
