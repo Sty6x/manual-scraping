@@ -37,6 +37,7 @@ async function getFile({ _, f, v, i, n, }) {
     });
     const dom = new JSDOM(readImportFile);
     const queryDataTableContainer = dom.window.document.getElementsByClassName("native-scroll__container_resizable")[0];
+    const verticals = dom.window.document.getElementsByClassName("pill__name")[3].textContent;
     const dataTable = Array.from(queryDataTableContainer.querySelectorAll(".cell-editable__content"));
     let dataCounter = STARTING_DATA_COUNTER;
     dataTable.forEach((item) => {
@@ -52,13 +53,13 @@ async function getFile({ _, f, v, i, n, }) {
             mappedDataArray.push({
                 ...newData,
                 Industries: i !== undefined ? removeChar(i) : "",
-                Verticals: v !== undefined ? removeChar(v) : "",
+                Verticals: verticals !== undefined ? verticals : "",
             });
             dataCounter = STARTING_DATA_COUNTER;
             newData = {};
         }
     });
-    events.emit("write", mappedDataArray.filter((item) => item[7] !== "" && item), n);
+    events.emit("write", mappedDataArray.filter((data) => data[7] !== ""), n);
 }
 async function writeEmails(personData, numberOfColumns) {
     try {

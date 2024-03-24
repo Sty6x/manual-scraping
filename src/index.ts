@@ -61,6 +61,9 @@ async function getFile({
     "native-scroll__container_resizable",
   )[0];
 
+  const verticals =
+    dom.window.document.getElementsByClassName("pill__name")[3].textContent;
+
   const dataTable: Array<HTMLSpanElement> = Array.from(
     queryDataTableContainer.querySelectorAll(".cell-editable__content"),
   );
@@ -81,7 +84,7 @@ async function getFile({
       mappedDataArray.push({
         ...newData,
         Industries: i !== undefined ? removeChar(i) : "",
-        Verticals: v !== undefined ? removeChar(v) : "",
+        Verticals: verticals !== undefined ? verticals : "",
       } as t_person);
       dataCounter = STARTING_DATA_COUNTER;
       newData = {};
@@ -90,7 +93,7 @@ async function getFile({
 
   events.emit(
     "write",
-    mappedDataArray.filter((item) => item[7] !== "" && item),
+    mappedDataArray.filter((data) => data[7] !== ""),
     n,
   );
 }
