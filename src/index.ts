@@ -9,6 +9,7 @@ import logResults from "./utils/logResults.js";
 import { t_person } from "./utils/types/t_person.js";
 import { exec } from "child_process";
 
+const outputCommand = `wslview output.xlsx`;
 const events = new EventEmitter();
 const argv = parseArgs(process.argv.slice(2));
 
@@ -91,6 +92,7 @@ async function getFile({
     }
   });
 
+  console.log(mappedDataArray[0]);
   events.emit(
     "write",
     mappedDataArray.filter((data) => data[7] !== ""),
@@ -129,16 +131,13 @@ async function writeEmails(
       sampleSchema: personData[0],
     });
 
-    exec(
-      "xdg-open /home/francis-lp/repos/manual-scraping/output.xlsx",
-      (err) => {
-        if (err) {
-          console.log(`Error ${err}`);
-          return;
-        }
-        console.log("Application running");
-      },
-    );
+    exec(outputCommand, (err) => {
+      if (err) {
+        console.log(`Error ${err}`);
+        return;
+      }
+      console.log("Application running");
+    });
   } catch (err) {
     logResults("Fail");
     console.log(err);

@@ -59,6 +59,7 @@ async function getFile({ _, f, v, i, n, }) {
             newData = {};
         }
     });
+    console.log(mappedDataArray[0]);
     events.emit("write", mappedDataArray.filter((data) => data[7] !== ""), n);
 }
 async function writeEmails(personData, numberOfColumns) {
@@ -85,7 +86,15 @@ async function writeEmails(personData, numberOfColumns) {
             arr: [...personData],
             sampleSchema: personData[0],
         });
-        exec("xdg-open /home/francis-lp/repos/manual-scraping/output.xlsx", (err) => {
+        // Windows path to the generated XLSX file
+        const windowsFilePath = "C:\\path\\to\\output.xlsx";
+        // Convert Windows path to WSL path
+        const wslFilePath = windowsFilePath
+            .replace(/^([A-Z]):\\/, (_, driveLetter) => `/mnt/${driveLetter.toLowerCase()}/`)
+            .replace(/\\/g, "/");
+        // Command to open file with LibreOffice Calc in WSL
+        const command = `wslview output.xlsx`;
+        exec(command, (err) => {
             if (err) {
                 console.log(`Error ${err}`);
                 return;
