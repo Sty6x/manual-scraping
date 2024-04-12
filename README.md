@@ -1,19 +1,19 @@
 # manual-scraping
 > Personal use.
 
-#### Why did I build this
+### Why did I build this
 
 Im not an expert in web scraping, but I was given a job to scrape 1000> of information off of a website, 
 and I refuse to manually input data on an excel sheet like they requested.
 
 
-#### How to use:
+### How to use:
 
-##### Branches
+#### Branches
 There are two branches to use, the `Windows` and `linux` branch, just pull whatever OS you're currently using.
 
-##### Command flags
-The script will take in a -f=<string>, -i=<string>, -v=<string> and -n=<number>
+#### Command flags
+The script will take in a `-f=<string>`, `-i=<string>`, `-v=<string>` and `-n=<number>`
 
 - f- File location of to be extracted html contents
 - i- Industries  (optional)
@@ -23,7 +23,7 @@ The script will take in a -f=<string>, -i=<string>, -v=<string> and -n=<number>
 
 > The emails are aumatically filtered if they are placed on the 7th column (not very practical I know).
 
-##### Prerequisites
+#### Prerequisites
 
 **General**
 - NodeJS
@@ -36,6 +36,6 @@ The script will take in a -f=<string>, -i=<string>, -v=<string> and -n=<number>
 
 
 
-###### Example
+#### Example
 `$ node . -f=path/to/data/location -i=industries -v=verticals -n=10`
 
