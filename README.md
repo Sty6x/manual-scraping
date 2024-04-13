@@ -3,7 +3,7 @@
 
 ### Why did I build this
 
-Im not an expert in web scraping, but I was given a job to scrape 1000> of information off of a website, 
+Im not an expert in web scraping, but I was given a job to scrape >1000 of information off of a website, 
 and I refuse to manually input data on an excel sheet like they requested.
 
 
